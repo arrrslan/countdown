@@ -4,8 +4,8 @@
         // --------------------------------------------------------------
         
         const eventDate = "January 1, 2026";   // Format: Month Day, Year
-        const eventTime = "04:50:00";          // Format: HH:MM:SS (24-hour)
-        const eventName = "My Birthday";       // What is the event?
+        const eventTime = "00:05:30";          // Format: HH:MM:SS (24-hour)
+        const eventName = "My Birthday Countdown";       // What is the event?
         const eventCele = "Today is my Birthday!" // Shows after timer
         
         // --------------------------------------------------------------
@@ -623,3 +623,4 @@
                  }, 3000);
              });
         });
+
