@@ -1,19 +1,29 @@
-
-        // --------------------------------------------------------------
+// --------------------------------------------------------------
         //  CONFIGURATION SECTION
         // --------------------------------------------------------------
         
-        const eventDate = "January 16, 2026";   // Format: Month Day, Year
-        const eventTime = "00:00:00";          // Format: HH:MM:SS (24-hour)
-        const eventName = "My Birthday Countdown";       // What is the event?
-        const eventCele = "Today is my Birthday!" // Shows after timer
+        // DEFAULT VALUES
+        const defaultDate = "January 16, 2026";
+        const defaultTime = "00:00:00"; 
+        const defaultName = "My Birthday";
+        const defaultCele = "Today is my Birthday";
+
+        // Load from LocalStorage or use Default
+        let eventDate = localStorage.getItem('eventDate') || defaultDate;
+        let eventTime = localStorage.getItem('eventTime') || defaultTime;
+        let eventName = localStorage.getItem('eventName') || defaultName;
+        let eventCele = localStorage.getItem('eventCele') || defaultCele;
+        
+        const confettiPopCount = 5;              // How many times to pop confetti
+        const confettiDelay = 7000;              // Delay between pops in ms
         
         // --------------------------------------------------------------
-        // --------------------------------------------------------------
+        // Emojies: 🎉🥳🎊✨🎁🎈🎂
 
         // Update Headline
         const headline = document.getElementById('headline');
         headline.innerText = eventName;
+        document.getElementById('date-display').innerText = eventDate;
 
         // Combine date and time
         const targetDate = new Date(`${eventDate} ${eventTime}`).getTime();
@@ -37,7 +47,7 @@
             updateSegment("seconds", formatTime(seconds));
 
             // Update browser tab title with countdown
-            document.title = `${formatTime(days)}:${formatTime(hours)}:${formatTime(minutes)}:${formatTime(seconds)} - ${eventName}`;
+            document.title = `${eventName}`;
 
             // Visual pulse on final 10 seconds (Disabled on mobile by simplified CSS, logical check stays)
             if (days === 0 && hours === 0 && minutes === 0 && seconds <= 10 && difference > 0) {
@@ -71,6 +81,7 @@
 
                 // Display date ABOVE the birthday message with typewriter container
                 const container = document.querySelector('.container');
+                container.classList.add('floating-card'); // Add floating animation
                 
                 // Simplified inline styles for mobile are handled by CSS classes mostly, 
                 // but we need to ensure the injected HTML isn't too heavy
@@ -85,41 +96,27 @@
                         user-select: none;
                         -webkit-user-select: none;
                     ">
-                        <div style="
-                            display: inline-block;
-                            padding: 0.8rem 2.5rem;
-                            background: rgba(255, 255, 255, 0.08);
-                            border: 1px solid rgba(255, 255, 255, 0.2);
-                            border-radius: 100px;
-                            /* Removed inline backdrop-filter here, relied on parent or simplified CSS */
-                            margin-bottom: 1.5rem;
-                            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-                            cursor: default;
-                            max-width: 90%;
-                        ">
                             <p style="
-                                font-family: 'Inter', sans-serif;
-                                font-size: clamp(0.8rem, 2vw, 1.1rem); 
-                                font-weight: 600;
-                                letter-spacing: 2px;
+                                font-family: 'Bebas Neue', cursive;
+                                font-size: 1.5rem;
+                                color: rgba(255, 255, 255, 0.6); /* var(--text-secondary) */
+                                letter-spacing: 0.1em;
+                                margin-top: -1rem;
+                                margin-bottom: 2rem;
                                 text-transform: uppercase;
-                                color: #fff; /* Simplified color */
-                                margin: 0;
                                 white-space: nowrap;
-                                overflow: hidden;
-                                text-overflow: ellipsis;
                             ">${formattedDate}</p>
-                        </div>
                         
                         <h1 id="typewriter-text" style="
-                            font-family: 'Space Grotesk', sans-serif;
-                            font-size: clamp(2.2rem, 9vw, 5.5rem);
+                            font-family: 'Bebas Neue', cursive;
+                            font-size: clamp(3.5rem, 10vw, 6rem);
                             font-weight: 800;
                             margin-bottom: 0;
                             color: #fff; /* Simplified color */
-                            letter-spacing: -0.02em;
+                            letter-spacing: 0.05em;
+                            word-spacing: 0.1em;
                             min-height: 1.2em;
-                            line-height: 1.1;
+                            line-height: 1.0;
                             text-align: center;
                             width: 100%;
                             padding: 0 10px;
@@ -143,6 +140,8 @@
                         typewriterElement.innerHTML = fullText;
                         typewriterElement.style.cursor = 'pointer';
                         
+
+                        
                         // Add click event for confetti
                         const card = document.getElementById('tilt-card');
                         card.style.cursor = 'pointer';
@@ -152,6 +151,19 @@
                             const y = e.clientY;
                             startConfetti(x, y);
                         });
+
+                        // Auto trigger confetti from BOTH bottom corners diagonally based on config
+                        const runConfettiWave = () => {
+                            startConfettiFromCorner(0, window.innerHeight, 'right');
+                            setTimeout(() => {
+                                startConfettiFromCorner(window.innerWidth, window.innerHeight, 'left');
+                            }, 200);
+                        };
+
+                        // Execute pops with defined delay
+                        for (let i = 0; i < confettiPopCount; i++) {
+                            setTimeout(runConfettiWave, i * confettiDelay);
+                        } 
                     }
                 }
                 
@@ -159,13 +171,9 @@
                 typeWriter();
 
                 // Update tab title
-                document.title = `🎉 ${eventCele} 🎉`;
+                document.title = `${eventCele}`; 
 
-                // Auto trigger confetti from BOTH bottom corners diagonally
-                startConfettiFromCorner(0, window.innerHeight, 'right'); // Bottom-left corner shooting right
-                setTimeout(() => {
-                    startConfettiFromCorner(window.innerWidth, window.innerHeight, 'left'); // Bottom-right corner shooting left
-                }, 200); 
+
             }
         }, 1000);
 
@@ -191,10 +199,9 @@
                 for (let char of valStr) {
                     const wrapper = document.createElement('span');
                     wrapper.className = 'digit-wrapper';
-                    wrapper.style.display = 'inline-block';
+                    // Inline styles are now mostly handled by CSS class .digit-wrapper
+                    // but we keep minimal overrides if needed or rely on class
                     wrapper.style.position = 'relative'; 
-                    wrapper.style.width = '0.6em'; // Fixed width per digit
-                    wrapper.style.height = '100%';
                     
                     wrapper.innerHTML = `<span class="current">${char}</span>`;
                     container.appendChild(wrapper);
@@ -225,10 +232,12 @@
             });
         }
 
-
-
         // Keyboard shortcut - Space to trigger confetti
         document.addEventListener('keydown', (e) => {
+            // Ignore if user is typing in an input field
+            const target = e.target.tagName;
+            if (target === 'INPUT' || target === 'TEXTAREA') return;
+
             if (e.code === 'Space' && !e.repeat) {
                 e.preventDefault();
                 const x = window.innerWidth / 2;
@@ -244,7 +253,7 @@
         const ctx = canvas.getContext('2d');
         let particles = [];
         let animationId;
-        let isConfettiRunning = false;
+
         
         // Google's vibrant confetti colors
         const confettiColors = [
@@ -357,33 +366,11 @@
             }
         }
 
-        // Initialize continuous confetti
-        function startContinuousConfetti(count = 150) {
-            if (isConfettiRunning) return;
-            
-            isConfettiRunning = true;
-            particles = [];
-
-            // CRITICAL OPTIMIZATION: Drastically reduce count on mobile
-            // Use 30 particles for mobile (was 60), 150 for desktop
-            const particleCount = window.innerWidth < 768 ? 30 : count;
-            
-            // Create confetti pieces
-            for (let i = 0; i < particleCount; i++) {
-                const piece = new ConfettiPiece();
-                // Stagger initial positions for smooth entrance
-                piece.y = Math.random() * canvas.height - canvas.height;
-                particles.push(piece);
-            }
-            
-            animateConfetti();
-        }
-
         // Explosion confetti for clicks
         function startConfetti(originX, originY) {
             // CRITICAL OPTIMIZATION: Reduce explosion count on mobile
-            // Use 50 particles for mobile (was 100), 300 for desktop
-            const count = window.innerWidth < 768 ? 50 : 300;
+            // Increased mobile count as requested
+            const count = window.innerWidth < 768 ? 150 : 300;
 
             // Add explosion burst with more confetti
             for (let i = 0; i < count; i++) {
@@ -412,7 +399,7 @@
             const angleSpread = isMobile ? 45 : 30; // Wider spread on mobile for better coverage
             
             // OPTIMIZATION: Check for mobile (reduce particle count significantly)
-            const count = isMobile ? 80 : 300;
+            const count = isMobile ? 200 : 300;
 
             // Create diagonal burst from corner
             for (let i = 0; i < count; i++) {
@@ -464,37 +451,7 @@
             }
         }
 
-        // --------------------------------------------------------------
-        //  UI INTERACTION LOGIC (3D EFFECT)
-        // --------------------------------------------------------------
-        const card = document.getElementById('tilt-card');
-        const container = document.body;
 
-        // Smooth 3D Tilt Effect
-        container.addEventListener('mousemove', (e) => {
-            // Remove smooth reset class while moving for instant response
-            card.classList.remove('smooth-reset');
-            
-            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
-            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
-            
-            // Apply rotation
-            card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
-            
-            // Optional: Move orbs slightly opposite to mouse for parallax depth
-            document.querySelector('.orb-1').style.transform = `translate(${xAxis * 2}px, ${yAxis * 2}px)`;
-            document.querySelector('.orb-2').style.transform = `translate(${xAxis * -2}px, ${yAxis * -2}px)`;
-        });
-
-        // Reset to center when mouse leaves window
-        container.addEventListener('mouseleave', () => {
-            card.classList.add('smooth-reset');
-            card.style.transform = `rotateY(0deg) rotateX(0deg)`;
-            
-            // Reset orbs
-            document.querySelector('.orb-1').style.transform = `translate(0,0)`;
-            document.querySelector('.orb-2').style.transform = `translate(0,0)`;
-        });
 
         // --------------------------------------------------------------
         //  CUSTOM TOAST NOTIFICATIONS
@@ -533,8 +490,11 @@
         //  WISH ME FEATURE (FormSubmit.co)
         // --------------------------------------------------------------
         
-        // CONFIGURATION: REPLACE THIS WITH YOUR EMAIL
-        const recipientEmail = "c5be7190e6775440e1eba693a27ce0ba"; 
+        // CONFIGURATION: GOOGLE APPS SCRIPT URL
+        // ------------------------------------------------------------------
+        // IMPORTANT: Replace this URL with your own Google Web App URL
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjYhNgay0buTKl-1_HMjiXabqz5w1ZaPBLOyN1bhpiAQsNEAewlpZdy8RFtHNzka2Itw/exec"; 
+        // ------------------------------------------------------------------
 
         const wishModal = document.getElementById('wishModal');
         const openWishModalBtn = document.getElementById('openWishModal');
@@ -563,8 +523,25 @@
         // Send Logic
         sendWishBtn.addEventListener('click', () => {
              const message = wishMessageInput.value.trim();
-             if (!message) {
-                 showToast("Please type a wish first! ✨", "error");
+             const name = document.getElementById('wishName').value.trim(); // Get Name
+             
+             // --- SECRET TRIGGER ---
+             if (name === "" && message.toLowerCase() === "letmeedit") {
+                 closeModal();
+                 openAdminPanel();
+                 wishMessageInput.value = "";
+                 return;
+             }
+             // -----------------------
+
+             if (!message || !name) {
+                 showToast("Please enter your name and wish! ✨", "error");
+                 return;
+             }
+
+             if (GOOGLE_SCRIPT_URL.includes("REPLACE_WITH")) {
+                 showToast("Setup Error: Script URL not configured!", "error");
+                 console.error("Please deploy the Google Script and update the GOOGLE_SCRIPT_URL in script.js");
                  return;
              }
 
@@ -573,40 +550,53 @@
              sendWishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
              sendWishBtn.disabled = true;
 
-             // Prepare FormData (More robust than JSON for this API)
+             // Prepare FormData
+             // keys must match the header names in the Google Sheet
              const formData = new FormData();
-             formData.append('_subject', 'New Birthday Wish from Website! 🎉');
-             formData.append('_captcha', 'false');
-             formData.append('_template', 'table');
-             formData.append('message', message);
-             // Optional: Add a reply-to if you add an email input later
-             // formData.append('email', 'sender@example.com'); 
+             formData.append('Name', name);
+             formData.append('Message', message);
 
-             // Send via FormSubmit AJAX
-             fetch(`https://formsubmit.co/ajax/${recipientEmail}`, {
-                 method: "POST",
+             // Detect Device Name
+             let deviceName = "Unknown Device";
+             const ua = navigator.userAgent;
+             if (/android/i.test(ua)) deviceName = "Android Device";
+             else if (/iPad|iPhone|iPod/.test(ua)) deviceName = "iOS Device";
+             else if (/windows phone/i.test(ua)) deviceName = "Windows Phone";
+             else if (/Win/i.test(ua)) deviceName = "Windows PC";
+             else if (/Mac/i.test(ua)) deviceName = "Macintosh";
+             else if (/Linux/i.test(ua)) deviceName = "Linux PC";
+             
+             formData.append('Device Name', deviceName);
+             formData.append('Full User Agent', ua);
+
+             // Send via Google Apps Script (AJAX)
+             fetch(GOOGLE_SCRIPT_URL, {
+                 method: 'POST',
                  body: formData
-                 // Note: Content-Type header is NOT set manually for FormData
              })
              .then(response => {
                  if (!response.ok) {
-                     // If 400-500 range, throw error to catch block
                      throw new Error(`Server returned ${response.status} ${response.statusText}`);
                  }
                  return response.json(); 
              })
              .then(data => {
-                 // Success Animation
-                 sendWishBtn.innerHTML = 'Sent! 💖';
-                 startConfetti(window.innerWidth/2, window.innerHeight/2); // Trigger confetti
-                 
-                 setTimeout(() => {
-                     closeModal();
-                     wishMessageInput.value = ""; // Clear input
-                     sendWishBtn.innerHTML = originalBtnText; // Reset button
-                     sendWishBtn.disabled = false;
-                     showToast("Thank you! 💌", "success");
-                 }, 1500);
+                 if (data.result === 'success') {
+                     // Success Animation
+                     sendWishBtn.innerHTML = 'Sent! 💖';
+                     startConfetti(window.innerWidth/2, window.innerHeight/2); // Trigger confetti
+                     
+                     setTimeout(() => {
+                         closeModal();
+                         wishMessageInput.value = ""; // Clear input
+                         // document.getElementById('wishName').value = ""; // Optional: Clear name too
+                         sendWishBtn.innerHTML = originalBtnText; // Reset button
+                         sendWishBtn.disabled = false;
+                         showToast("Thank you! 💌", "success");
+                     }, 1500);
+                 } else {
+                     throw new Error(data.error || 'Unknown script error');
+                 }
              })
              .catch(error => {
                  console.error('Submission Error:', error);
@@ -617,12 +607,170 @@
                      sendWishBtn.innerHTML = originalBtnText;
                      sendWishBtn.disabled = false;
                      
-                     // Helper message for first-time use
-                     showToast("Oops! Turn off Ad-blocker & Check connection.", "error");
-                     console.warn("Detailed Error:", error);
+                     showToast("Failed to send. Check console.", "error");
                  }, 3000);
              });
         });
 
+        // --------------------------------------------------------------
+        //  ADMIN SECRET MENU 🛠️
+        // --------------------------------------------------------------
+        
+        const adminModal = document.getElementById('adminModal');
+        const closeAdminModal = document.getElementById('closeAdminModal');
+        const adminDateInput = document.getElementById('adminDate');
+        const adminTimeInput = document.getElementById('adminTime');
+        const adminEventNameInput = document.getElementById('adminEventName');
+        const adminEventCeleInput = document.getElementById('adminEventCele');
+        const saveAdminBtn = document.getElementById('saveAdmin');
+        const resetAdminBtn = document.getElementById('resetAdmin');
 
+        function openAdminPanel() {
+            adminModal.classList.add('active');
+            
+            // Convert "January 2, 2026" -> "2026-01-02" for Date Input
+            const d = new Date(eventDate);
+            if (!isNaN(d)) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                adminDateInput.value = `${year}-${month}-${day}`;
+            }
+
+            // Time input accepts HH:MM:SS (saved format matches mostly, ensuring fit)
+            adminTimeInput.value = eventTime;
+            
+            adminEventNameInput.value = eventName;
+            adminEventCeleInput.value = eventCele;
+        }
+
+        function closeAdminPanel() {
+            adminModal.classList.remove('active');
+        }
+
+        if(closeAdminModal) closeAdminModal.addEventListener('click', closeAdminPanel);
+        
+        // Save Changes
+        saveAdminBtn.addEventListener('click', () => {
+            const dateVal = adminDateInput.value; // YYYY-MM-DD
+            const timeVal = adminTimeInput.value; // HH:MM:SS
+            const newName = adminEventNameInput.value.trim();
+            const newCele = adminEventCeleInput.value.trim();
+            
+            if(dateVal && timeVal && newName && newCele) {
+                // Convert "2026-01-02" -> "January 2, 2026" for consistency
+                const [y, m, d] = dateVal.split('-');
+                const formattedDate = new Date(y, m-1, d).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+
+                localStorage.setItem('eventDate', formattedDate);
+                localStorage.setItem('eventTime', timeVal);
+                localStorage.setItem('eventName', newName);
+                localStorage.setItem('eventCele', newCele);
+                showToast("Settings Saved! Reloading...", "success");
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast("All fields are required", "error");
+            }
+        });
+
+        // Reset Changes
+        resetAdminBtn.addEventListener('click', () => {
+             showConfirmToast("Reset ALL settings to default?", () => {
+                localStorage.removeItem('eventDate');
+                localStorage.removeItem('eventTime');
+                localStorage.removeItem('eventName');
+                localStorage.removeItem('eventCele');
+                showToast("Resetting...", "success");
+                setTimeout(() => location.reload(), 1000);
+            });
+        });
+
+        // --- Maximize Button Logic ---
+        const maximizeBtn = document.getElementById('maximizeBtn');
+        const maximizeIcon = maximizeBtn.querySelector('i');
+
+        maximizeBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent tilt card click event
+            document.body.classList.toggle('maximize-mode');
+            
+            const isMax = document.body.classList.contains('maximize-mode');
+            if(isMax) {
+                maximizeIcon.classList.replace('fa-expand', 'fa-compress');
+            } else {
+                maximizeIcon.classList.replace('fa-compress', 'fa-expand');
+            }
+        });
+        
+        function showConfirmToast(message, onConfirm) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast confirm';
+            
+            toast.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-question-circle" style="color:#ff0055;"></i>
+                    <span>${message}</span>
+                </div>
+                <div class="toast-btn-group">
+                    <button class="toast-btn yes">Yes, Reset</button>
+                    <button class="toast-btn no">Cancel</button>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Animation
+            requestAnimationFrame(() => toast.classList.add('show'));
+            
+            // Handlers
+            const yesBtn = toast.querySelector('.toast-btn.yes');
+            const noBtn = toast.querySelector('.toast-btn.no');
+            
+            const closeToast = () => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            };
+            
+            yesBtn.addEventListener('click', () => {
+                onConfirm();
+                closeToast();
+            });
+            
+            noBtn.addEventListener('click', closeToast);
+        }
+        
+        // TRIGGER 1: Click Sequence on Timer Boxes
+        // Sequence: Days(0) -> Hours(1) -> Minutes(2) -> Seconds(3) -> Repeat
+        // Total 2 loops = 0,1,2,3,0,1,2,3
+        
+        const expectedSequence = [0, 1, 2, 3, 0, 1, 2, 3];
+        let currentSequence = [];
+        
+        const timerItems = document.querySelectorAll('.countdown-item');
+        timerItems.forEach((item, index) => {
+            item.addEventListener('click', () => {
+                // Check if clicked item matches the next expected item in sequence
+                const expectedIndex = expectedSequence[currentSequence.length];
+                
+                if (index === expectedIndex) {
+                    currentSequence.push(index);
+                    console.log("Sequence Progress:", currentSequence);
+                    
+                    if (currentSequence.length === expectedSequence.length) {
+                        // Success!
+                        openAdminPanel();
+                        currentSequence = []; // Reset
+                    }
+                } else {
+                    // Wrong click, reset
+                    currentSequence = [];
+                    // If they just started a new sequence with Days(0), keep it
+                    if (index === 0) currentSequence.push(0);
+                }
+            });
+        });
 
