@@ -1,4 +1,4 @@
-// --------------------------------------------------------------
+        // --------------------------------------------------------------
         //  CONFIGURATION SECTION
         // --------------------------------------------------------------
         
@@ -6,7 +6,7 @@
         const defaultDate = "January 16, 2026";
         const defaultTime = "00:00:00"; 
         const defaultName = "My Birthday";
-        const defaultCele = "Today is my Birthday";
+        const defaultCele = "It's my Birthday";
 
         // Load from LocalStorage or use Default
         let eventDate = localStorage.getItem('eventDate') || defaultDate;
@@ -27,6 +27,8 @@
 
         // Combine date and time
         const targetDate = new Date(`${eventDate} ${eventTime}`).getTime();
+        
+
 
         const timer = setInterval(function() {
             const now = new Date().getTime();
@@ -46,17 +48,19 @@
             updateSegment("minutes", formatTime(minutes));
             updateSegment("seconds", formatTime(seconds));
 
+
+
             // Update browser tab title with countdown
             document.title = `${eventName}`;
 
-            // Visual pulse on final 10 seconds (Disabled on mobile by simplified CSS, logical check stays)
-            if (days === 0 && hours === 0 && minutes === 0 && seconds <= 10 && difference > 0) {
+            // Visual pulse on final 16 seconds (Disabled on mobile)
+            if (days === 0 && hours === 0 && minutes === 0 && seconds <= 16 && difference > 0) {
                 const secBox = document.getElementById('seconds').parentElement;
                 // Only animate if not mobile (simple check)
-                 if (window.innerWidth > 768) {
+                //  if (window.innerWidth > 768) {
                     secBox.style.animation = 'pulse 0.5s infinite';
-                    secBox.style.borderColor = 'rgba(255, 105, 180, 0.8)';
-                 }
+                    secBox.style.borderColor = 'rgba(241, 57, 7, 0.8)';
+                //  }
             }
 
             // Milestone notifications
@@ -64,6 +68,13 @@
 
             if (difference < 0) {
                 clearInterval(timer);
+                
+                // Remove UI Controls
+                const maxBtn = document.getElementById('maximizeBtn');
+
+
+                const clockToggle = document.getElementById('clockToggle');
+                if (clockToggle) clockToggle.style.display = 'none';
                 
                 // Stop pulse
                 document.getElementById('seconds').parentElement.style.animation = 'none';
@@ -86,41 +97,9 @@
                 // Simplified inline styles for mobile are handled by CSS classes mostly, 
                 // but we need to ensure the injected HTML isn't too heavy
                 container.innerHTML = `
-                    <div style="
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        height: 100%;
-                        width: 100%;
-                        user-select: none;
-                        -webkit-user-select: none;
-                    ">
-                            <p style="
-                                font-family: 'Bebas Neue', cursive;
-                                font-size: 1.5rem;
-                                color: rgba(255, 255, 255, 0.6); /* var(--text-secondary) */
-                                letter-spacing: 0.1em;
-                                margin-top: -1rem;
-                                margin-bottom: 2rem;
-                                text-transform: uppercase;
-                                white-space: nowrap;
-                            ">${formattedDate}</p>
-                        
-                        <h1 id="typewriter-text" style="
-                            font-family: 'Bebas Neue', cursive;
-                            font-size: clamp(3.5rem, 10vw, 6rem);
-                            font-weight: 800;
-                            margin-bottom: 0;
-                            color: #fff; /* Simplified color */
-                            letter-spacing: 0.05em;
-                            word-spacing: 0.1em;
-                            min-height: 1.2em;
-                            line-height: 1.0;
-                            text-align: center;
-                            width: 100%;
-                            padding: 0 10px;
-                        "></h1>
+                    <div class="celebration-wrapper">
+                        <p class="celebration-date">${formattedDate}</p>
+                        <h1 id="typewriter-text" class="celebration-text"></h1>
                     </div>
                 `;
                 
@@ -139,18 +118,34 @@
                         // Remove cursor at end, make it clickable
                         typewriterElement.innerHTML = fullText;
                         typewriterElement.style.cursor = 'pointer';
-                        
+                                               
+                        // Add GLOBAL click event for confetti
+                        document.addEventListener('click', (e) => {
+                            // Ignore clicks on buttons/inputs to prevent conflicts
+                            if (e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea')) return;
 
-                        
-                        // Add click event for confetti
-                        const card = document.getElementById('tilt-card');
-                        card.style.cursor = 'pointer';
-                        card.addEventListener('click', (e) => {
-                            const rect = card.getBoundingClientRect();
                             const x = e.clientX;
                             const y = e.clientY;
-                            startConfetti(x, y);
+                            const width = window.innerWidth;
+                            const height = window.innerHeight;
+                            const cornerThreshold = 150; // Pixels from corner
+
+                            // Bottom Left Corner -> Shoot Right
+                            if (x < cornerThreshold && y > height - cornerThreshold) {
+                                startConfettiFromCorner(0, height, 'right');
+                            } 
+                            // Bottom Right Corner -> Shoot Left
+                            else if (x > width - cornerThreshold && y > height - cornerThreshold) {
+                                startConfettiFromCorner(width, height, 'left');
+                            } 
+                            // Anywhere else -> Normal Pop
+                            else {
+                                startConfetti(x, y);
+                            }
                         });
+                        
+                        // Set cursor for whole body
+                       // document.body.style.cursor = 'pointer';
 
                         // Auto trigger confetti from BOTH bottom corners diagonally based on config
                         const runConfettiWave = () => {
@@ -486,10 +481,6 @@
             }, 3000);
         }
 
-        // --------------------------------------------------------------
-        //  WISH ME FEATURE (FormSubmit.co)
-        // --------------------------------------------------------------
-        
         // CONFIGURATION: GOOGLE APPS SCRIPT URL
         // ------------------------------------------------------------------
         // IMPORTANT: Replace this URL with your own Google Web App URL
@@ -704,6 +695,14 @@
                 maximizeIcon.classList.replace('fa-compress', 'fa-expand');
             }
         });
+
+        // Toggle Maximize with 'F' key
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.key.toLowerCase() === 'f') {
+                maximizeBtn.click();
+            }
+        });
         
         function showConfirmToast(message, onConfirm) {
             const container = document.getElementById('toastContainer');
@@ -774,3 +773,103 @@
             });
         });
 
+
+        // --------------------------------------------------------------
+        //  UI INTERACTIONS (Tilt & Mobile Effects)
+        // --------------------------------------------------------------
+        
+        const tiltCard = document.getElementById('tilt-card');
+        const maxTilt = 10; // Max rotation degrees
+        
+        // Mouse Move (PC Tilt)
+        tiltCard.addEventListener('mousemove', (e) => {
+            // Disable on Mobile or if Maximize Mode is on
+            if (window.innerWidth <= 768 || document.body.classList.contains('maximize-mode')) {
+                return;
+            }
+            
+            // FIX: Don't tilt if hovering over the Maximize Button (or if it catches you)
+            if (e.target.closest('#maximizeBtn')) {
+                // Determine if we should reset tilt (optional, but cleaner)
+                // Let's just stop the tilt update so it stays stable or returns to 0
+                return; 
+            }
+
+            const rect = tiltCard.getBoundingClientRect();
+            const x = e.clientX - rect.left; // x position within the element.
+            const y = e.clientY - rect.top;  // y position within the element.
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            // Calculate rotation
+            // RotateX is based on Y position (tilt up/down)
+            // RotateY is based on X position (tilt left/right)
+            const rotateX = ((y - centerY) / centerY) * -maxTilt; // Invert Y
+            const rotateY = ((x - centerX) / centerX) * maxTilt;
+            
+            // Apply Transform
+            requestAnimationFrame(() => {
+                tiltCard.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+            });
+        });
+
+        let resetTimer;
+
+        // Mouse Enter (Reset transition for instant response)
+        tiltCard.addEventListener('mouseenter', () => {
+            if (window.innerWidth <= 768) return;
+            
+            // Cancel any pending reset to prevent snapping if re-entering
+            if (resetTimer) clearTimeout(resetTimer);
+
+            tiltCard.style.transition = ''; // Use CSS default (0.1s)
+            tiltCard.style.animation = 'none'; // Ensure animation remains off
+        });
+
+        // Mouse Leave (Smooth Reset)
+        tiltCard.addEventListener('mouseleave', () => {
+            if (window.innerWidth <= 768) return;
+            
+            // Block CSS animation from taking over immediately
+            tiltCard.style.animation = 'none';
+
+            // Apply slow transition for smooth return
+            tiltCard.style.transition = 'transform 2.8s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            tiltCard.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+            
+            // Clear after transition
+            resetTimer = setTimeout(() => {
+                // Check if user hasn't re-entered (optional, but good practice if we were tracking state, 
+                // but here clearing styles basically reverts to CSS state which is what we want)
+                tiltCard.style.transform = ''; 
+                tiltCard.style.transition = ''; 
+                tiltCard.style.animation = ''; // Restore CSS animation (Heartbeat or Floating)
+            }, 2800);
+        });
+        
+        // Mobile Touch Interaction 
+        // "Hover effect of tap": Scale UP slightly and apply subtle glow ONLY when tapped
+        tiltCard.addEventListener('touchstart', () => {
+             if (window.innerWidth <= 768 && !document.body.classList.contains('maximize-mode')) {
+                 // Hover up (scale 1.02) + Faded Low Glow
+                 tiltCard.style.transform = 'translateY(-6px)';
+                 tiltCard.style.border = '3px solid rgba(255, 255, 255, 0.1)';
+                 tiltCard.style.transition = 'all 0.2s ease-out';
+             }
+        }, {passive: true});
+        
+        tiltCard.addEventListener('touchend', () => {
+             if (window.innerWidth <= 768 && !document.body.classList.contains('maximize-mode')) {
+                 // Release -> Return to normal
+                 tiltCard.style.transform = 'translateY(0)';
+                 tiltCard.style.border = ''; // Revert to CSS default
+                 
+                 // Remove inline style after transition to clean up
+                 setTimeout(() => {
+                     tiltCard.style.transform = '';
+                     tiltCard.style.border = '';
+                     tiltCard.style.transition = '';
+                 }, 200);
+             }
+        });
